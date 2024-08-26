@@ -10,7 +10,7 @@ t = Int64(1e6)
 firms = Main.structs.firm(
     1, #id
     0.15, #alpha
-    4e-5, #beta
+    2e-6, #beta
     0.95, #gamma
     1.0, #c
     11, #k
