@@ -58,13 +58,29 @@ end
 
 x = bins
 y = world.data.average_prices
-plot(x,y,title="average price (default)", xlabel="t", ylabel="average price")
-savefig("figs/average_price(default).png")
+plot(x,y,title="average price (brandloyalty)", xlabel="t", ylabel="average price")
+savefig("figs/average_price(brandloyalty).png")
 
 y = world.firms[1].data.prices
-plot(x,y,title="firm 1 prices", xlabel="t", ylabel="average price")
-savefig("figs/firm1_price(default).png")
+plot(x,y,title="firm 1 prices (brandloyalty)", xlabel="t", ylabel="average price")
+savefig("figs/firm1_price(brandloyalty).png")
 
 y = world.firms[1].data.profits
-plot(x,y,title="firm 1 profit", xlabel="t", ylabel="average profit")
-savefig("figs/firm1_profit(default).png")
+plot(x,y,title="firm 1 profit (brandloyalty)", xlabel="t", ylabel="average profit")
+savefig("figs/firm1_profit(brandloyalty).png")
+
+y = world.firms[2].data.prices
+plot(x,y,title="firm 2 prices (brandloyalty)", xlabel="t", ylabel="average price")
+savefig("figs/firm2_price(brandloyalty).png")
+
+y = world.firms[2].data.profits
+plot(x,y,title="firm 2 profit (brandloyalty)", xlabel="t", ylabel="average profit")
+savefig("figs/firm2_profit(brandloyalty).png")
+
+y = world.firms[3].data.prices
+plot(x,y,title="firm 3 prices (brandloyalty)", xlabel="t", ylabel="average price")
+savefig("figs/firm3_price(brandloyalty).png")
+
+y = world.firms[3].data.profits
+plot(x,y,title="firm 3 profit (brandloyalty)", xlabel="t", ylabel="average profit")
+savefig("figs/firm3_profit(brandloyalty).png")
