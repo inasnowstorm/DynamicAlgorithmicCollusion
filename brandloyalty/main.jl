@@ -38,7 +38,7 @@ world = init.def_model(
 )
 
 world = training.simulate_model(world)
-iterated_write(world)
+data_management.iterated_write(world)
 
 bin_nums = 1000
 divider = tmax/bin_nums
