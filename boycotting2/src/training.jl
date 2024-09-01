@@ -23,7 +23,7 @@ module training
                 (model.firms[n]).Q = update_Q(model, n, profits, a)
             end
             push!(model.data, (mean(p),(sum(profits) + sum(c_profit))))
-            model.consumers = loyal_move(model, d)
+            model.consumers = boycott_move(model, p)
             model.s = a
             model.t += 1
         end
@@ -88,34 +88,45 @@ module training
         return (model.firms[n]).Q
     end
 
-    function loyal_move(model::Main.structs.model, d::Array{Int64,1})::Array{Main.structs.consumer,1}
-        for i in eachindex(d)
-            if d[i] != 0
-                l1 = model.consumers[i].location
-                l2 = model.firms[d[i]].location
-                dist1 = abs(l1 - l2)
-                dist2 = 1 - abs(l1 - l2)
-                if dist1 > dist2 && l1 > l2
-                    model.consumers[i].location = (l1 * (1-model.move)) + (dist2 * model.move)
-                elseif dist1 > dist2 && l1 < l2
-                    model.consumers[i].location = (l1 * (1-model.move)) - (dist2 * model.move)
-                elseif dist1 < dist2 && l1 > l2
-                    model.consumers[i].location = (l1 * (1-model.move)) - (dist1 * model.move)
-                elseif dist1 < dist2 && l1 > l2
-                    model.consumers[i].location = (l1 * (1-model.move)) + (dist1 * model.move)
+    function boycott_move(model::Main.structs.model, p2::Array{Float64,1})::Array{Main.structs.consumer,1}
+        p1 = Float64.(zeros(length(p2)))
+        for i in eachindex(p1)
+            p1[i] = (model.firms[i]).A[model.s[i]]
+        end
+        p = p2 .- p1
+        max_p = findmax(p)
+        if count(==(max_p[1]),p) != 1
+            return model.consumers
+        end
+        if model.firms[max_p[2]].location >= 0.5
+            l2 = model.firms[max_p[2]].location - 0.5
+        else
+            l2 = model.firms[max_p[2]].location + 0.5
+        end
+        for c in model.consumers
+            l1 = c.location
+            dist1 = abs(l1 - l2)
+            dist2 = 1 - abs(l1 - l2)
+            if dist1 > dist2 && l1 > l2
+                c.location = (l1 * (1-model.move)) + (dist2 * model.move)
+            elseif dist1 > dist2 && l1 < l2
+                c.location = (l1 * (1-model.move)) - (dist2 * model.move)
+            elseif dist1 < dist2 && l1 > l2
+                c.location = (l1 * (1-model.move)) - (dist1 * model.move)
+            elseif dist1 < dist2 && l1 > l2
+                c.location = (l1 * (1-model.move)) + (dist1 * model.move)
+            else
+                e = rand() > 0.5
+                if e
+                    c.location = (l1 * (1-model.move)) + (dist1 * model.move)
                 else
-                    e = rand() > 0.5
-                    if e
-                        model.consumers[i].location = (l1 * (1-model.move)) + (dist1 * model.move)
-                    else
-                        model.consumers[i].location = (l1 * (1-model.move)) - (dist1 * model.move)
-                    end
+                    c.location = (l1 * (1-model.move)) - (dist1 * model.move)
                 end
-                if model.consumers[i].location < 0
-                    model.consumers[i].location = model.consumers[i].location + 1
-                elseif model.consumers[i].location > 1
-                    model.consumers[i].location = model.consumers[i].location - 1
-                end
+            end
+            if c.location < 0
+                c.location = c.location + 1
+            elseif c.location > 1
+                c.location = c.location - 1
             end
         end
         return model.consumers

@@ -5,12 +5,12 @@ include("src/init.jl")
 include("src/training.jl")
 include("src/data_management.jl")
 
-t = Int64(1e6)
+tmax = Int64(1e7)
 
 firms = Main.structs.firm(
     1, #id
     0.15, #alpha
-    2e-6, #beta
+    4e-6, #beta
     0.95, #gamma
     1.0, #c
     11, #k
@@ -33,17 +33,17 @@ world = init.def_model(
     firms, #base firm
     consumers, #base consumer
     0.2, #standard deviation for normal distribution of value
-    t #number of iterations simulation runs for
+    tmax #number of iterations simulation runs for
 )
 
 world = training.simulate_model(world)
 data_management.iterated_write(world)
 
 bin_nums = 1000
-divider = t/bin_nums
+divider = tmax/bin_nums
 
 bins = Vector{Int64}(undef,0)
-for i in 0:((t/divider)-1)
+for i in 0:((tmax/divider)-1)
     push!(bins, Int64((i*divider)+1))
     push!(bins, Int64((i+1)*divider))
 end
@@ -51,7 +51,7 @@ end
 world = data_management.average_data(world,bins)
 
 bins = Vector{Int64}(undef,0)
-for i in 0:((t/divider)-1)
+for i in 0:((tmax/divider)-1)
     push!(bins, Int64((i+1)*divider))
 end
 
