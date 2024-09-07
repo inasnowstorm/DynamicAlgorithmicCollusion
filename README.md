@@ -6,7 +6,7 @@ Based on code uploaded by Matteo Courthoud (2021) URL: https://github.com/matteo
 
 To run, simply open julia the main directory and run 'include("main.jl")'
 
-Ensure you make the following directories to allow for figures and data to be written:\n
+Ensure you make the following directories to allow for figures and data to be written:\
 figs/boycotting1/\
 figs/boycotting2/\
 figs/boycotting3/\
