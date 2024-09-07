@@ -4,4 +4,16 @@ Replication of "Artificial Intelligence, Algorithmic Pricing, and Collusion" by 
 
 Based on code uploaded by Matteo Courthoud (2021) URL: https://github.com/matteocourthoud/Algorithmic-Collusion-Replication
 
-To run, simply open julia in one of the files and run 'include("main.jl")'
+To run, simply open julia the main directory and run 'include("main.jl")'
+
+Ensure you make the following directories to allow for figures and data to be written:
+figs/boycotting1/
+figs/boycotting2/
+figs/boycotting3/
+figs/brandloyalty/
+figs/default/
+data/boycotting1/
+data/boycotting2/
+data/boycotting3/
+data/brandloyalty/
+data/default/
