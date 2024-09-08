@@ -17,9 +17,9 @@ module data_management
 
     function average_data(model::Main.structs.model, bins::Vector{Int64})::Main.structs.model
         for i in 1:length(model.consumers)
-            new_data = DataFrame(prices = [], profits = [], firm = [])
+            new_data = DataFrame(prices = [], profits = [], firm = [], location = [])
             for j in 1:(length(bins)/2)
-                push!(new_data,(mean(model.consumers[i].data.prices[bins[Int64(2j-1)]:bins[Int64(2j)]]),mean(model.consumers[i].data.profits[bins[Int64(2j-1)]:bins[Int64(2j)]]),mode(model.consumers[i].data.firm[bins[Int64(2j-1)]:bins[Int64(2j)]])))
+                push!(new_data,(mean(model.consumers[i].data.prices[bins[Int64(2j-1)]:bins[Int64(2j)]]),mean(model.consumers[i].data.profits[bins[Int64(2j-1)]:bins[Int64(2j)]]),mode(model.consumers[i].data.firm[bins[Int64(2j-1)]:bins[Int64(2j)]]),mean(model.consumers[i].data.location[bins[Int64(2j-1)]:bins[Int64(2j)]])))
             end
             model.consumers[i].data = new_data
         end

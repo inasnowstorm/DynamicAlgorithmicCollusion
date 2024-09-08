@@ -15,7 +15,7 @@ module training
             end
             d, c_profit, c_prices = get_demand(model, p)
             for n in eachindex(d)
-                push!((model.consumers[n]).data, (c_prices[n], c_profit[n], d[n]))
+                push!((model.consumers[n]).data, (c_prices[n], c_profit[n], d[n], model.consumers[n].location))
             end
             profits = get_profits(model, d, p)
             for n in eachindex(model.firms)

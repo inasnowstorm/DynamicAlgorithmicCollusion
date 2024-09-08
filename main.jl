@@ -6,7 +6,8 @@ include("src/training.jl")
 include("src/data_management.jl")
 
 tmax = Int64(2e6) #maximum time
-n = 2 #number of firms
+n = 3 #number of firms
+d = 100 #number of consumers
 
 #simulation type
 #1 = default simulation
@@ -39,19 +40,19 @@ for simtype in 1:5
         0, #location
         zeros(1), #A
         zeros(1,1,1), #Q
-        DataFrame(prices = [], profits = []), #data
+        DataFrame(prices = [], profits = []) #data
     )
 
     consumers = Main.structs.consumer(
         0, #location
         2.0, #v (used as mean for normal distribution of value)
         2, #mu
-        DataFrame(prices = [], profits = [], firm = []), #data
+        DataFrame(prices = [], profits = [], firm = [], location = []) #data
     )
 
     world = init.def_model(
         n, #number of firms
-        50, #number of consumers
+        d, #number of consumers
         firms, #base firm
         consumers, #base consumer
         0.2, #standard deviation for normal distribution of value
@@ -69,11 +70,34 @@ for simtype in 1:5
 
     bins = Vector{Int64}(undef,0)
     for i in 0:((tmax/divider)-1)
+        push!(bins, Int64((i+1)*divider))
+    end
+
+    bins = [1; bins]
+    x = bins
+    y = []
+    colours = []
+
+    for c in world.consumers[1:10:100] #subset here just to reduce clutter
+        push!(y, c.data.location[bins])
+        push!(colours, :blue)
+    end
+
+    for f in world.firms
+        push!(y, vcat(fill.(f.location, length(bins))))
+        push!(colours, :red)
+    end
+
+    plot(x,y,title=string("consumer locations (", scenario, ")"), xlabel="t", ylabel="location", legend=false)
+    savefig(string("figs/", scenario,"/consumer_locations(", scenario, ").png"))
+
+    bins = Vector{Int64}(undef,0)
+    for i in 0:((tmax/divider)-1)
         push!(bins, Int64((i*divider)+1))
         push!(bins, Int64((i+1)*divider))
     end
 
-    world = data_management.average_data(world,bins)
+    ave_world = data_management.average_data(world,bins)
 
     bins = Vector{Int64}(undef,0)
     for i in 0:((tmax/divider)-1)
@@ -81,24 +105,22 @@ for simtype in 1:5
     end
 
     x = bins
-    y = world.data.average_prices
+    y = ave_world.data.average_prices
     plot(x,y,title=string("average price (", scenario, ")"), xlabel="t", ylabel="average price")
     savefig(string("figs/", scenario,"/average_price(", scenario, ").png"))
 
-    y = world.firms[1].data.prices
-    plot(x,y,title=string("firm 1 prices (", scenario, ")"), xlabel="t", ylabel="average price")
-    savefig(string("figs/", scenario,"/firm1_price(", scenario, ").png"))
+    y = ave_world.data.average_prices
+    plot(x,y,title=string("average price (", scenario, ")"), xlabel="t", ylabel="average price")
+    savefig(string("figs/", scenario,"/average_price(", scenario, ").png"))
 
-    y = world.firms[1].data.profits
-    plot(x,y,title=string("firm 1 profits (", scenario, ")"), xlabel="t", ylabel="average profit")
-    savefig(string("figs/", scenario,"/firm1_profits(", scenario, ").png"))
+    for i in 1:n
+        y = ave_world.firms[i].data.prices
+        plot(x,y,title=string("firm ", i, " prices (", scenario, ")"), xlabel="t", ylabel="average price")
+        savefig(string("figs/", scenario,"/firm", i, "_price(", scenario, ").png"))
 
-    y = world.firms[2].data.prices
-    plot(x,y,title=string("firm 2 prices (", scenario, ")"), xlabel="t", ylabel="average price")
-    savefig(string("figs/", scenario,"/firm2_price(", scenario, ").png"))
-
-    y = world.firms[2].data.profits
-    plot(x,y,title=string("firm 2 profits (", scenario, ")"), xlabel="t", ylabel="average profit")
-    savefig(string("figs/", scenario,"/firm2_profits(", scenario, ").png"))
+        y = ave_world.firms[i].data.profits
+        plot(x,y,title=string("firm ", i, " profits (", scenario, ")"), xlabel="t", ylabel="average profit")
+        savefig(string("figs/", scenario,"/firm", i, "_profits(", scenario, ").png"))
+    end
 
 end
