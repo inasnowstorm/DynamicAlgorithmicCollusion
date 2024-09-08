@@ -6,14 +6,6 @@ Based on code uploaded by Matteo Courthoud (2021) URL: https://github.com/matteo
 
 To run, simply open julia the main directory and run 'include("main.jl")'
 
-Ensure you make the following directories to allow for figures and data to be written:\
-figs/boycotting1/\
-figs/boycotting2/\
-figs/boycotting3/\
-figs/brandloyalty/\
-figs/default/\
-data/boycotting1/\
-data/boycotting2/\
-data/boycotting3/\
-data/brandloyalty/\
-data/default/
+Ensure you make directories of the following style to allow for figures and data to be written:\
+figs/**scenarioname**/\
+data/**scenarioname**/
