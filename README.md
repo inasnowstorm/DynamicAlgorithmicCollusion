@@ -7,5 +7,5 @@ Based on code uploaded by Matteo Courthoud (2021) URL: https://github.com/matteo
 To run, simply open julia the main directory and run 'include("main.jl")'
 
 Ensure you make directories of the following style to allow for figures and data to be written:\
-figs/**scenarioname**/\
-data/**scenarioname**/
+figs/*scenarioname*/\
+data/*scenarioname*/
