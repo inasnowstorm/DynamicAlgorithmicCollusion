@@ -4,6 +4,7 @@ module data_management
 
     export iterated_write, average_data
 
+    #goes through a model and saves all data into CSV files
     function iterated_write(model::Main.structs.model, directory)
         for i in 1:length(model.consumers)
             CSV.write(string("data/", directory,"/consumer_data", i, ".csv"), model.consumers[i].data)
@@ -15,10 +16,12 @@ module data_management
         CSV.write(string("data/", directory,"/world_data.csv"), model.data)
     end
 
+    #averages data using bins vector as a range (odd indexes are lower bounds, even indexes are upper bounds)
     function average_data(model::Main.structs.model, bins::Vector{Int64})::Main.structs.model
         for i in 1:length(model.consumers)
             new_data = DataFrame(prices = [], profits = [], firm = [], location = [])
             for j in 1:(length(bins)/2)
+                #pushes averaged data into new_data which then replaces the old data
                 push!(new_data,(mean(model.consumers[i].data.prices[bins[Int64(2j-1)]:bins[Int64(2j)]]),mean(model.consumers[i].data.profits[bins[Int64(2j-1)]:bins[Int64(2j)]]),mode(model.consumers[i].data.firm[bins[Int64(2j-1)]:bins[Int64(2j)]]),mean(model.consumers[i].data.location[bins[Int64(2j-1)]:bins[Int64(2j)]])))
             end
             model.consumers[i].data = new_data

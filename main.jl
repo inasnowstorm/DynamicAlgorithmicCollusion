@@ -30,6 +30,7 @@ for simtype in 1:5
         scenario = string("boycotting3")
     end
 
+    #initialises the firm with firm variables
     firms = Main.structs.firm(
         1, #id
         0.15, #alpha
@@ -43,6 +44,7 @@ for simtype in 1:5
         DataFrame(prices = [], profits = []) #data
     )
 
+    #initialises the consumer with consumer variables
     consumers = Main.structs.consumer(
         0, #location
         2.0, #v (used as mean for normal distribution of value)
@@ -50,6 +52,7 @@ for simtype in 1:5
         DataFrame(prices = [], profits = [], firm = [], location = []) #data
     )
 
+    #initialises the model using the firm and consumer variables defined above
     world = init.def_model(
         n, #number of firms
         d, #number of consumers
@@ -62,41 +65,50 @@ for simtype in 1:5
         simtype #simulation type
     )
 
+    #simulated the model and writes all data that was collected into CSV files
     world = training.simulate_model(world)
     data_management.iterated_write(world, scenario)
 
+    #provides the number of bins that data should be sorted into
     bin_nums = 1000
     divider = tmax/bin_nums
 
+    #creating a vector to use to only see 1000 data points, evenly spaced over time
     bins = Vector{Int64}(undef,0)
     for i in 0:((tmax/divider)-1)
         push!(bins, Int64((i+1)*divider))
     end
 
+    #creates bins and colours for location plot
     bins = [1; bins]
     x = bins
     y = []
     colours = []
 
+    #add consumer location data
     for c in world.consumers[1:10:100] #subset here just to reduce clutter
         push!(y, c.data.location[bins])
         push!(colours, :blue)
     end
 
+    #adds firm location data
     for f in world.firms
         push!(y, vcat(fill.(f.location, length(bins))))
         push!(colours, :red)
     end
 
+    #plot and save location data
     plot(x,y,title=string("consumer locations (", scenario, ")"), xlabel="t", ylabel="location", legend=false)
     savefig(string("figs/", scenario,"/consumer_locations(", scenario, ").png"))
 
+    #similar to previous bins but this time bins act as a range (from 1 to 1000 for example)
     bins = Vector{Int64}(undef,0)
     for i in 0:((tmax/divider)-1)
         push!(bins, Int64((i*divider)+1))
         push!(bins, Int64((i+1)*divider))
     end
 
+    #averages the data
     ave_world = data_management.average_data(world,bins)
 
     bins = Vector{Int64}(undef,0)
@@ -104,15 +116,13 @@ for simtype in 1:5
         push!(bins, Int64((i+1)*divider))
     end
 
+    #creates average price plot
     x = bins
     y = ave_world.data.average_prices
     plot(x,y,title=string("average price (", scenario, ")"), xlabel="t", ylabel="average price")
     savefig(string("figs/", scenario,"/average_price(", scenario, ").png"))
 
-    y = ave_world.data.average_prices
-    plot(x,y,title=string("average price (", scenario, ")"), xlabel="t", ylabel="average price")
-    savefig(string("figs/", scenario,"/average_price(", scenario, ").png"))
-
+    #creates plots of profits and prices of individual firms
     for i in 1:n
         y = ave_world.firms[i].data.prices
         plot(x,y,title=string("firm ", i, " prices (", scenario, ")"), xlabel="t", ylabel="average price")

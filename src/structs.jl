@@ -40,7 +40,7 @@ module structs
         # simulation type, 1 = default simulation, 2 = brand loyalty, 3 = boycotting1, 4 = boycotting2, 5 = boycotting3
 
         """memory"""
-        t::Int64                                # Keeps track of what the current period is
+        cur_t::Int64                                # Keeps track of what the current period is
         data::DataFrame                         # Saves data associated with the simulation
         s::Array{Int64,1}                       # Previous actions
     end
