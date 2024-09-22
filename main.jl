@@ -33,7 +33,7 @@ for simtype in 1:5
     #initialises the firm with firm variables
     firms = Main.structs.firm(
         1, #id
-        0.15, #alpha
+        0.05, #alpha
         4e-6, #beta
         0.95, #gamma
         1.0, #mc
