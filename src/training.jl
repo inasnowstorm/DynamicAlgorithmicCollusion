@@ -4,26 +4,25 @@ module training
 
     export simulate_model
 
-    #simulates the model
+    # Simulates the model
     function simulate_model(model::Main.structs.model)::Main.structs.model
-        #iterates until max time is reached
+        # Iterate until convergence
         for t in 1:model.tmax
-            a = get_actions(model) #provides the actions for that period
-            p = Float64.(zeros(length(a))) #creates a blank price schedule
+            a = get_actions(model)
+            p = Float64.(zeros(length(a)))
             for i in eachindex(p)
-                p[i] = (model.firms[i]).A[a[i]] #replaces price schedule with actions
+                p[i] = (model.firms[i]).A[a[i]]
             end
-            d, c_profit, c_prices = get_demand(model, p) #gets demand and the price each consumer paid, as well as their profit
+            d, c_profit, c_prices = get_demand(model, p)
             for n in eachindex(d)
-                push!((model.consumers[n]).data, (c_prices[n], c_profit[n], d[n], model.consumers[n].location)) #saves consumer data
+                push!((model.consumers[n]).data, (c_prices[n], c_profit[n], d[n], model.consumers[n].location))
             end
-            profits = get_profits(model, d, p) #gets the profits for firms given the consumer actions and prices firms chose
+            profits = get_profits(model, d, p)
             for n in eachindex(model.firms)
-                push!(model.firms[n].data, (p[n],profits[n])) #saves firm data
-                (model.firms[n]).Q = update_Q(model, n, profits, a) #updates the Q matrix
+                push!(model.firms[n].data, (p[n],profits[n]))
+                (model.firms[n]).Q = update_Q(model, n, profits, a)
             end
-            push!(model.data, (mean(p),(sum(profits) + sum(c_profit)))) #saves model data
-            #moves consumers if scenario is a scenario involving movement
+            push!(model.data, (mean(p),(sum(profits) + sum(c_profit))))
             if model.simtype == 2
                 model.consumers = loyal_move(model, d)
             elseif model.simtype == 3
@@ -31,12 +30,12 @@ module training
             elseif model.simtype == 4
                 model.consumers = boycott2_move(model, p)
             elseif model.simtype == 5
-                if model.cur_t != 1
+                if model.t != 1
                     model.consumers = boycott3_move(model)
                 end
             end
-            model.s = a #current actions are saved as previous actions
-            model.cur_t += 1 #increase time period by 1
+            model.s = a
+            model.t += 1
         end
         return model
     end
@@ -44,21 +43,21 @@ module training
     # Gets the actions for an iteration, partially through random chance, partially through Q function
     function get_actions(model::Main.structs.model)::Array{Int64,1}
         """Get actions"""
-        a = Int64.(zeros(length(model.firms))) #provides empty actions array
+        a = Int64.(zeros(length(model.firms)))
         for n in eachindex(a)
-            pr_explore = exp(- model.cur_t * (model.firms)[n].beta) #probability to do a random action
+            pr_explore = exp(- model.t * (model.firms)[n].beta)
             e = pr_explore > rand()
             if e
-                a[n] = rand(1:(model.firms)[n].k) #chooses random action
+                a[n] = rand(1:(model.firms)[n].k)
             else
-                other_s = Int64.(my_round(mean(model.s[1:end .!=n]))) #takes average of other firm previous choices
-                a[n] = argmax(((model.firms[n]).Q)[model.s[n], other_s, :]) #uses Q matrix to provide new acton
+                other_s = Int64.(my_round(mean(model.s[1:end .!=n])))
+                a[n] = argmax(((model.firms[n]).Q)[model.s[n], other_s, :])
             end
         end
         return a
     end
 
-    # Gets the demands for an iteration given the prices of the firms and distance between consumers and firms
+    # Gets the demands for an iteration given the prices of the firms
     function get_demand(model::Main.structs.model, p::Array{Float64,1})::Tuple{Array{Int64,1}, Array{Float64,1}, Array{Float64,1}}
         n = length(model.firms)
         d = Int64.(zeros(length(model.consumers)))
@@ -79,7 +78,7 @@ module training
         return d, c_profit, c_prices
     end
 
-    #returns the profits that each firm gets 
+    # Returns the profits that each firm gets 
     function get_profits(model::Main.structs.model, d::Array{Int64,1}, p::Array{Float64,1})::Array{Float64,1}
         profits = Float64.(zeros(length(p)))
         for i in eachindex(profits)
@@ -88,8 +87,8 @@ module training
         return profits
     end
 
-    #updates Q matrix
     function update_Q(model::Main.structs.model, n::Int64, profits::Array{Float64,1}, a::Array{Int64,1})::Array{Float64,3}
+        """Update Q function"""
         other_s = Int64.(my_round(mean(model.s[1:end .!=n])))
         other_a = Int64.(my_round(mean(a[1:end .!=n])))
         old_value = (model.firms[n]).Q[model.s[n], other_s, a[n]]
@@ -99,8 +98,17 @@ module training
         return (model.firms[n]).Q
     end
 
+    # Rounding function needed as inbuilt round function would lead to situations where round(4.5)=4
+    function my_round(n::Float64)::Float64
+        if n >= floor(n)+0.5
+            return floor(n)+1
+        else
+            return floor(n)
+        end
+    end
+
     # different types of movement
-    # for brand loyalty scenario, move consumers closer to their chosen firm
+    # for brand loyalty scenario
     function loyal_move(model::Main.structs.model, d::Array{Int64,1})::Array{Main.structs.consumer,1}
         for i in eachindex(d)
             if d[i] != 0
@@ -109,19 +117,19 @@ module training
                 dist1 = abs(l1 - l2)
                 dist2 = 1 - abs(l1 - l2)
                 if dist1 > dist2 && l1 > l2
-                    model.consumers[i].location = (l1 * (1-model.move)) + (dist2 * model.move)
+                    model.consumers[i].location = l1 + (dist2 * model.move)
                 elseif dist1 > dist2 && l1 < l2
-                    model.consumers[i].location = (l1 * (1-model.move)) - (dist2 * model.move)
+                    model.consumers[i].location = l1 - (dist2 * model.move)
                 elseif dist1 < dist2 && l1 > l2
-                    model.consumers[i].location = (l1 * (1-model.move)) - (dist1 * model.move)
+                    model.consumers[i].location = l1 - (dist1 * model.move)
                 elseif dist1 < dist2 && l1 > l2
-                    model.consumers[i].location = (l1 * (1-model.move)) + (dist1 * model.move)
+                    model.consumers[i].location = l1 + (dist1 * model.move)
                 else
                     e = rand() > 0.5
                     if e
-                        model.consumers[i].location = (l1 * (1-model.move)) + (dist1 * model.move)
+                        model.consumers[i].location = l1 + (dist1 * model.move)
                     else
-                        model.consumers[i].location = (l1 * (1-model.move)) - (dist1 * model.move)
+                        model.consumers[i].location = l1 - (dist1 * model.move)
                     end
                 end
                 if model.consumers[i].location < 0
@@ -134,7 +142,7 @@ module training
         return model.consumers
     end
 
-    # for boycotting1 scenario, moves consumers away from firm with highest price.
+    # for boycotting1 scenario
     function boycott1_move(model::Main.structs.model, p::Array{Float64,1})::Array{Main.structs.consumer,1}
         max_p = findmax(p)
         if count(==(max_p[1]),p) != 1
@@ -150,19 +158,19 @@ module training
             dist1 = abs(l1 - l2)
             dist2 = 1 - abs(l1 - l2)
             if dist1 > dist2 && l1 > l2
-                c.location = (l1 * (1-model.move)) + (dist2 * model.move)
+                c.location = l1 + (dist2 * model.move)
             elseif dist1 > dist2 && l1 < l2
-                c.location = (l1 * (1-model.move)) - (dist2 * model.move)
+                c.location = l1 - (dist2 * model.move)
             elseif dist1 < dist2 && l1 > l2
-                c.location = (l1 * (1-model.move)) - (dist1 * model.move)
+                c.location = l1 - (dist1 * model.move)
             elseif dist1 < dist2 && l1 > l2
-                c.location = (l1 * (1-model.move)) + (dist1 * model.move)
+                c.location = l1 + (dist1 * model.move)
             else
                 e = rand() > 0.5
                 if e
-                    c.location = (l1 * (1-model.move)) + (dist1 * model.move)
+                    c.location = l1 + (dist1 * model.move)
                 else
-                    c.location = (l1 * (1-model.move)) - (dist1 * model.move)
+                    c.location = l1 - (dist1 * model.move)
                 end
             end
             if c.location < 0
@@ -174,7 +182,7 @@ module training
         return model.consumers
     end
 
-    # for boycotting2 scenario, moves away from firm with the largest price hike
+    # for boycotting2 scenario
     function boycott2_move(model::Main.structs.model, p2::Array{Float64,1})::Array{Main.structs.consumer,1}
         p1 = Float64.(zeros(length(p2)))
         for i in eachindex(p1)
@@ -195,19 +203,19 @@ module training
             dist1 = abs(l1 - l2)
             dist2 = 1 - abs(l1 - l2)
             if dist1 > dist2 && l1 > l2
-                c.location = (l1 * (1-model.move)) + (dist2 * model.move)
+                c.location = l1 + (dist2 * model.move)
             elseif dist1 > dist2 && l1 < l2
-                c.location = (l1 * (1-model.move)) - (dist2 * model.move)
+                c.location = l1 - (dist2 * model.move)
             elseif dist1 < dist2 && l1 > l2
-                c.location = (l1 * (1-model.move)) - (dist1 * model.move)
+                c.location = l1 - (dist1 * model.move)
             elseif dist1 < dist2 && l1 > l2
-                c.location = (l1 * (1-model.move)) + (dist1 * model.move)
+                c.location = l1 + (dist1 * model.move)
             else
                 e = rand() > 0.5
                 if e
-                    c.location = (l1 * (1-model.move)) + (dist1 * model.move)
+                    c.location = l1 + (dist1 * model.move)
                 else
-                    c.location = (l1 * (1-model.move)) - (dist1 * model.move)
+                    c.location = l1 - (dist1 * model.move)
                 end
             end
             if c.location < 0
@@ -219,7 +227,7 @@ module training
         return model.consumers
     end
 
-    # for boycotting3 scenario, moves away from firm if their price is larger than the previous price the consumer bought from
+    # for boycotting3 scenario
     function boycott3_move(model::Main.structs.model)::Array{Main.structs.consumer,1}
         for c in model.consumers
             p1 = c.data.prices[size(c.data)[1]-1]
@@ -235,19 +243,19 @@ module training
                 dist1 = abs(l1 - l2)
                 dist2 = 1 - abs(l1 - l2)
                 if dist1 > dist2 && l1 > l2
-                    c.location = (l1 * (1-model.move)) + (dist2 * model.move)
+                    c.location = l1 + (dist2 * model.move)
                 elseif dist1 > dist2 && l1 < l2
-                    c.location = (l1 * (1-model.move)) - (dist2 * model.move)
+                    c.location = l1 - (dist2 * model.move)
                 elseif dist1 < dist2 && l1 > l2
-                    c.location = (l1 * (1-model.move)) - (dist1 * model.move)
+                    c.location = l1 - (dist1 * model.move)
                 elseif dist1 < dist2 && l1 > l2
-                    c.location = (l1 * (1-model.move)) + (dist1 * model.move)
+                    c.location = l1 + (dist1 * model.move)
                 else
                     e = rand() > 0.5
                     if e
-                        c.location = (l1 * (1-model.move)) + (dist1 * model.move)
+                        c.location = l1 + (dist1 * model.move)
                     else
-                        c.location = (l1 * (1-model.move)) - (dist1 * model.move)
+                        c.location = l1 - (dist1 * model.move)
                     end
                 end
                 if c.location < 0
@@ -258,15 +266,6 @@ module training
             end
         end
         return model.consumers
-    end
-
-    # Rounding function needed as inbuilt round function would lead to situations where round(4.5)=4
-    function my_round(n::Float64)::Float64
-        if n >= floor(n)+0.5
-            return floor(n)+1
-        else
-            return floor(n)
-        end
     end
 
 end
