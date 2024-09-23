@@ -35,7 +35,7 @@ module init
         return model_firms
     end
 
-    #produces the action schedule based on optimal price (where profits are maximised) and then goes slightly above that optimum
+    # initialises the action space
     function init_actions(n::Int64, v::Float64, d::Int64, mc::Float64, mu::Float64, k::Int64, kabove::Int64)::Array{Float64,1}
         distances = (1/d):(1/d):(floor(d/(2n))/d)
         max_prices = v .- (mu .* distances)
@@ -53,7 +53,7 @@ module init
     # places d consumers around a circle with cirumference 1 and initialises their value of product using normal distribution
     function init_consumers(consumers::Main.structs.consumer, d::Int64, sd::Float64)::Array{Main.structs.consumer,1}
         model_consumers = Array{Main.structs.consumer,1}()
-        dist = Normal(consumers.v, sd) #creates a normally distributed value for consumers.
+        dist = Normal(consumers.v, sd)
         for i in 0:(1/d):(1-1/d)
             consumers.location = i
             consumers.v = rand(dist)
