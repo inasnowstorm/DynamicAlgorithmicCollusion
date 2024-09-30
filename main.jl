@@ -6,7 +6,7 @@ include("src/training.jl")
 include("src/data_management.jl")
 
 tmax = Int64(2e6) #maximum time,
-n = 3 #number of firms, 
+n = 2 #number of firms, 
 d = 100 #number of consumers
 move = 0.1 #movement parameter (how far consumers move per period)
 
@@ -17,8 +17,10 @@ move = 0.1 #movement parameter (how far consumers move per period)
 #4 = boycotting2
 #5 = boycotting3
 
-for simtype in 1:5
+for simtype in 2:5
     
+    test_name = string(",n=2,move=0.1")
+
     if simtype == 1
         scenario = string("default")
     elseif simtype == 2
@@ -91,7 +93,7 @@ for simtype in 1:5
         push!(colours, :red)
     end
 
-    plot(x,y[1],lc=colours[1],title=string("consumer locations (", scenario, ")"), xlabel="t", ylabel="location", legend=false)
+    plot(x,y[1],lc=colours[1],title=string("consumer locations (", scenario, test_name, ")"), xlabel="t", ylabel="location", legend=false)
     for i in 2:length(y)
         plot!(x,y[i],lc=colours[i])
     end
@@ -114,21 +116,21 @@ for simtype in 1:5
     #plotting and saving plots
     x = bins
     y = ave_world.data.average_prices
-    plot(x,y,title=string("average price (", scenario, ")"), xlabel="t", ylabel="average price")
-    savefig(string("figs/", scenario,"/average_price(", scenario, ").png"))
+    plot(x,y,title=string("average price (", scenario, test_name, ")"), xlabel="t", ylabel="average price")
+    savefig(string("figs/", scenario,"/average_price(", scenario, test_name, ").png"))
 
     y = ave_world.data.average_prices
-    plot(x,y,title=string("average price (", scenario, ")"), xlabel="t", ylabel="average price")
-    savefig(string("figs/", scenario,"/average_price(", scenario, ").png"))
+    plot(x,y,title=string("average price (", scenario, test_name, ")"), xlabel="t", ylabel="average price")
+    savefig(string("figs/", scenario,"/average_price(", scenario, test_name, ").png"))
 
     for i in 1:n
         y = ave_world.firms[i].data.prices
-        plot(x,y,title=string("firm ", i, " prices (", scenario, ")"), xlabel="t", ylabel="average price")
-        savefig(string("figs/", scenario,"/firm", i, "_price(", scenario, ").png"))
+        plot(x,y,title=string("firm ", i, " prices (", scenario, test_name, ")"), xlabel="t", ylabel="average price")
+        savefig(string("figs/", scenario,"/firm", i, "_price(", scenario, test_name, ").png"))
 
         y = ave_world.firms[i].data.profits
-        plot(x,y,title=string("firm ", i, " profits (", scenario, ")"), xlabel="t", ylabel="average profit")
-        savefig(string("figs/", scenario,"/firm", i, "_profits(", scenario, ").png"))
+        plot(x,y,title=string("firm ", i, " profits (", scenario, test_name, ")"), xlabel="t", ylabel="average profit")
+        savefig(string("figs/", scenario,"/firm", i, "_profits(", scenario, test_name, ").png"))
     end
 
 end

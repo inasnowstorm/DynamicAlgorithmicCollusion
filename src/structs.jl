@@ -8,7 +8,7 @@ module structs
         alpha::Float64                          # Learning parameter
         beta::Float64                           # Randomisation parameter
         gamma::Float64                          # Discount factor
-        mc::Float64                             # Marginal cost
+        mc::Float64                              # Marginal cost
         k::Int64                                # Dimension of the price grid
         location::Float64                       # Location on circle hotelling model
 
@@ -23,7 +23,7 @@ module structs
     mutable struct consumer
         """set properties"""
         location::Float64                       # Location on circle hotelling model
-        v::Float64                              # Value of the product
+        v::Float64                                # Value of the product
         mu::Float64                             # Product differentiation/travelling cost
 
         """memory"""

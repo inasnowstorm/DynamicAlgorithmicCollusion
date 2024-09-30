@@ -35,7 +35,6 @@ module init
         return model_firms
     end
 
-    # initialises the action space
     function init_actions(n::Int64, v::Float64, d::Int64, mc::Float64, mu::Float64, k::Int64, kabove::Int64)::Array{Float64,1}
         distances = (1/d):(1/d):(floor(d/(2n))/d)
         max_prices = v .- (mu .* distances)
