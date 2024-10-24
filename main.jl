@@ -37,7 +37,7 @@ for simtype in 2:5
         1, #id
         0.05, #alpha
         4e-6, #beta
-        0.95, #gamma
+        0.95, #delta
         1.0, #mc
         11, #k
         0, #location
