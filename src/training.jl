@@ -93,7 +93,7 @@ module training
         other_a = Int64.(my_round(mean(a[1:end .!=n])))
         old_value = (model.firms[n]).Q[model.s[n], other_s, a[n]]
         max_q = max((model.firms[n]).Q[a[n], other_a, :]...)
-        new_value = profits[n] + (model.firms[n]).gamma * max_q
+        new_value = profits[n] + (model.firms[n]).delta * max_q
         (model.firms[n]).Q[model.s[n], other_s, a[n]] = (1 - (model.firms[n]).alpha) * old_value + (model.firms[n]).alpha * new_value
         return (model.firms[n]).Q
     end
